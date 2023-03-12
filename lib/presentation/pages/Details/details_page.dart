@@ -9,6 +9,7 @@ import 'package:mouvour_flutter/data/models/movies_model.dart';
 import 'package:mouvour_flutter/data/models/sing/single_movie.dart';
 import 'package:mouvour_flutter/data/repositories/movie_repository.dart';
 import 'package:mouvour_flutter/logic/cubits/Theme/theme_cubit.dart';
+import 'package:mouvour_flutter/presentation/Widgets/hard_code_movie.dart';
 import 'package:mouvour_flutter/presentation/Widgets/movie_card_now.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -29,14 +30,12 @@ class _DetailsPageState extends State<DetailsPage> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     _streamController.close();
   }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getMovieDets();
   }
@@ -56,8 +55,6 @@ class _DetailsPageState extends State<DetailsPage> {
     ];
     debugPrint("All data is => ${allData}");
     _streamController.sink.add(allData);
-    // _streamController.sink.add(allData);
-    // dataStream = allData;
   }
 
   MovieRepository movieRepository = MovieRepository();
@@ -69,11 +66,16 @@ class _DetailsPageState extends State<DetailsPage> {
           stream: _streamController.stream,
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
-              return Center(child: CircularProgressIndicator());
+              return Scaffold(
+                backgroundColor: widget.isDark.toString() == "true"
+                    ? Colors.grey[900]
+                    : Colors.grey[200],
+                body: Center(child: CircularProgressIndicator()));
             } else {
               var movieData = snapshot.data![0][0];
               var castData = snapshot.data![1];
-              var similarMov = snapshot.data![2] ?? ["no data"];
+              var similarMov = snapshot.data![2];
+              print("similarMov =>>> ${similarMov.length == 0}");
               return Scaffold(
                 backgroundColor: widget.isDark.toString() == "true"
                     ? Colors.grey[900]
@@ -157,32 +159,37 @@ class _DetailsPageState extends State<DetailsPage> {
                               child: Row(
                                       children:
                                           movieData?.genres.map<Widget>((e) {
-                                    return Container(
-                                      width: 81,
-                                      height: 25,
-                                      decoration: BoxDecoration(
-                                        color:
-                                            Color.fromARGB(206, 238, 204, 202),
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Center(
-                                              child: Text(
-                                            maxLines: 1,
-                                            "${e.name.toString()}"
-                                                .toUpperCase(),
-                                            style: TextStyle(
-                                                fontSize: 11,
-                                                color: Colors.black),
-                                          )),
-                                          SizedBox(
-                                            width: 5,
+                                    return Row(
+                                      children: [
+                                        Container(
+                                          width: 81,
+                                          height: 25,
+                                          decoration: BoxDecoration(
+                                            color: Color.fromARGB(
+                                                206, 238, 204, 202),
+                                            borderRadius:
+                                                BorderRadius.circular(20),
                                           ),
-                                        ],
-                                      ),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Center(
+                                                  child: Text(
+                                                maxLines: 1,
+                                                "${e.name.toString()}"
+                                                    .toUpperCase(),
+                                                style: TextStyle(
+                                                    fontSize: 11,
+                                                    color: Colors.black),
+                                              )),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 10,
+                                        )
+                                      ],
                                     );
                                   }).toList()) ??
                                   Text("Unavailable"),
@@ -332,19 +339,34 @@ class _DetailsPageState extends State<DetailsPage> {
                                         return Container(
                                           child: Row(
                                             children: <Widget>[
-                                              e.profilePath != null
-                                                  ? CircleAvatar(
-                                                      maxRadius: 30,
-                                                      backgroundImage: NetworkImage(
-                                                          "${Const.IMG}${e.profilePath}"),
-                                                    )
-                                                  : Text("Unavailable",
-                                                      style: TextStyle(
-                                                          color: widget
-                                                                      .isDark ==
-                                                                  "true"
-                                                              ? Colors.white
-                                                              : Colors.black)),
+                                              Column(
+                                                children: [
+                                                  e.profilePath != null
+                                                      ? CircleAvatar(
+                                                          maxRadius: 40,
+                                                          backgroundImage:
+                                                              NetworkImage(
+                                                                  "${Const.IMG}${e.profilePath}"),
+                                                        )
+                                                      : CircleAvatar(
+                                                          maxRadius: 40,
+                                                          backgroundImage:
+                                                              AssetImage(
+                                                                  "assets/images/cast_def.png"),
+                                                        ),
+                                                  SizedBox(
+                                                    height: 7,
+                                                  ),
+                                                  Text(
+                                                    "${e.name}",
+                                                    style: TextStyle(
+                                                        color: widget.isDark ==
+                                                                "true"
+                                                            ? Colors.white
+                                                            : Colors.black),
+                                                  )
+                                                ],
+                                              ),
                                               SizedBox(
                                                 width: 10,
                                               )
@@ -387,41 +409,137 @@ class _DetailsPageState extends State<DetailsPage> {
                             SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
                               child: Row(
-                                  children: similarMov?.map<Widget>((e) {
-                                        return InkWell(
-                                          onTap: () async {
-                                            context.pop();
-                                            context
-                                                .pushNamed('details', params: {
-                                              'id': "${e.id}",
-                                            }, queryParams: {
-                                              "isDark":
-                                                  "${widget.isDark.toString()}"
-                                            });
-                                          },
-                                          child: Container(
+                                  children: similarMov.length > 0
+                                      ? similarMov?.map<Widget>((e) {
+                                          return InkWell(
+                                            onTap: () async {
+                                              context.pop();
+                                              context.pushNamed('details',
+                                                  params: {
+                                                    'id': "${e.id}",
+                                                  },
+                                                  queryParams: {
+                                                    "isDark":
+                                                        "${widget.isDark.toString()}"
+                                                  });
+                                            },
+                                            child: Container(
+                                              child: Row(
+                                                children: <Widget>[
+                                                  Movie_card_now(
+                                                      e: e,
+                                                      isDark: widget.isDark),
+                                                  SizedBox(
+                                                    width: 10,
+                                                  )
+                                                ],
+                                              ),
+                                            ),
+                                          );
+                                        }).toList()
+                                      : <Widget>[
+                                          InkWell(
+                                            onTap: () async {
+                                              context.pop();
+                                              context.pushNamed('details',
+                                                  params: {
+                                                    'id': "${436270}",
+                                                  },
+                                                  queryParams: {
+                                                    "isDark":
+                                                        "${widget.isDark.toString()}"
+                                                  });
+                                            },
                                             child: Row(
                                               children: <Widget>[
-                                                Movie_card_now(
-                                                    e: e,
-                                                    isDark: widget.isDark),
-                                                SizedBox(
-                                                  width: 10,
+                                                HardCodeMovie(
+                                                  isDark:
+                                                      widget.isDark.toString(),
+                                                  posterPath:
+                                                      "/pFlaoHTZeyNkG83vxsAJiGzfSsa.jpg",
+                                                  rating: "7.1",
+                                                  title: "Black Adam",
                                                 )
                                               ],
                                             ),
                                           ),
-                                        );
-                                      }).toList() ??
-                                      <Widget>[
-                                        Text(
-                                          "Similar movies Not Available",
-                                          style: TextStyle(
-                                              color: widget.isDark == "true"
-                                                  ? Colors.white
-                                                  : Colors.black),
-                                        )
-                                      ]),
+                                          InkWell(
+                                            onTap: () async {
+                                              context.pop();
+                                              context.pushNamed('details',
+                                                  params: {
+                                                    'id': "${635302}",
+                                                  },
+                                                  queryParams: {
+                                                    "isDark":
+                                                        "${widget.isDark.toString()}"
+                                                  });
+                                            },
+                                            child: Row(
+                                              children: <Widget>[
+                                                HardCodeMovie(
+                                                  isDark:
+                                                      widget.isDark.toString(),
+                                                  posterPath:
+                                                      "/h8Rb9gBr48ODIwYUttZNYeMWeUU.jpg",
+                                                  rating: " 8.3",
+                                                  title:
+                                                      "Demon Slayer -Kimetsu no Yaiba- The Movie: Mugen Train",
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                          InkWell(
+                                            onTap: () async {
+                                              context.pop();
+                                              context.pushNamed('details',
+                                                  params: {
+                                                    'id': "${267805}",
+                                                  },
+                                                  queryParams: {
+                                                    "isDark":
+                                                        "${widget.isDark.toString()}"
+                                                  });
+                                            },
+                                            child: Row(
+                                              children: <Widget>[
+                                                HardCodeMovie(
+                                                  isDark:
+                                                      widget.isDark.toString(),
+                                                  posterPath:
+                                                      "/fcOTYArjKuAgufwHoTvx8w9UKCv.jpg",
+                                                  rating: "5.4",
+                                                  title: "There Are No Saints",
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                          InkWell(
+                                            onTap: () async {
+                                              context.pop();
+                                              context.pushNamed('details',
+                                                  params: {
+                                                    'id': "${157336}",
+                                                  },
+                                                  queryParams: {
+                                                    "isDark":
+                                                        "${widget.isDark.toString()}"
+                                                  });
+                                            },
+                                            child: Row(
+                                              children: <Widget>[
+                                                HardCodeMovie(
+                                                  isDark:
+                                                      widget.isDark.toString(),
+                                                  posterPath:
+                                                      "/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
+                                                  rating: "8.4",
+                                                  title: "Interstellar",
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                        ]),
                             ),
                           ],
                         ),

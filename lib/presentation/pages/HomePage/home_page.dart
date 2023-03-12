@@ -15,10 +15,12 @@ import 'package:mouvour_flutter/logic/cubits/singleMovieCubit/single_movie_cubit
 import 'package:mouvour_flutter/logic/cubits/singleMovieCubit/single_movie_state.dart';
 import 'package:mouvour_flutter/presentation/Widgets/movie_card_now.dart';
 import 'package:mouvour_flutter/presentation/Widgets/sidebyside_movie_card.dart';
-import 'package:mouvour_flutter/routes/app_routes.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class HomePage extends StatelessWidget {
+
+  
+
   @override
   Widget build(BuildContext context) {
     ThemeCubit theme = BlocProvider.of<ThemeCubit>(context, listen: true);
@@ -27,16 +29,9 @@ class HomePage extends StatelessWidget {
       backgroundColor: theme.isDark ? Colors.grey[900] : Colors.grey[200],
       appBar: AppBar(
         // leading: const Icon(Icons.menu),
-        title: Text("Mouvour ${theme.isDark ? "Dark mode" : "light Mode"}"),
-        backgroundColor: theme.isDark
-            ? Colors.grey[900]
-            : Color.fromARGB(255, 104, 104, 104),
-        // actions: <Widget>[
-        //   ,
-        //   SizedBox(
-        //     width: 15,
-        //   ),
-        // ],
+        title: Text("Mouvour"),
+        backgroundColor:
+            theme.isDark ? Colors.black : Colors.lightBlueAccent[500],
       ),
       drawer: Drawer(
         backgroundColor: theme.isDark ? Colors.black : Colors.white,
@@ -46,19 +41,26 @@ class HomePage extends StatelessWidget {
             child: Column(children: <Widget>[
               Row(
                 children: <Widget>[
-                  IconButton(
-                      onPressed: () {
-                        theme.changeTheme();
-                      },
-                      icon:
-                          Icon(theme.isDark ? Icons.wb_sunny : Icons.dark_mode),
-                      color: theme.isDark ? Colors.white : Colors.black),
-                  Text(
-                    "Switch to ${theme.isDark ? "light" : "dark"} mode",
-                    style: TextStyle(
-                        fontSize: 16,
-                        color: theme.isDark ? Colors.white : Colors.black),
-                  )
+                  InkWell(
+                    onTap: () => theme.changeTheme(),
+                    child: Row(
+                      children: <Widget>[
+                        IconButton(
+                            onPressed: () => theme.changeTheme(),
+                            icon: Icon(theme.isDark
+                                ? Icons.wb_sunny
+                                : Icons.dark_mode),
+                            color: theme.isDark ? Colors.white : Colors.black),
+                        Text(
+                          "Switch to ${theme.isDark ? "light" : "dark"} mode",
+                          style: TextStyle(
+                              fontSize: 16,
+                              color:
+                                  theme.isDark ? Colors.white : Colors.black),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ]),
@@ -91,65 +93,79 @@ class HomePage extends StatelessWidget {
                         height: 5,
                       ),
                       Container(
+                          key: key,
                           child: CarouselSlider(
-                        items: state.now_playing_movies!.take(10).map((e) {
-                          return InkWell(
-                            onTap: () => GoRouter.of(context)
-                                .pushNamed('details', params: {
-                              'id': '${e.id}',
-                            }),
-                            child: Stack(
-                              children: <Widget>[
-                                Container(
-                                  width: double.infinity,
-                                  height: 210,
-                                  child: FittedBox(
-                                    fit: BoxFit.cover,
-                                    child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(10),
-                                        // child: Image(
-                                        //   image: NetworkImage(
-                                        //       "${Const.IMG}${e.backdropPath}"),
-                                        //   fit: BoxFit.cover,
-                                        // ),
-                                        child: CachedNetworkImage(
-                                          imageUrl:
-                                              "${Const.IMG}${e.backdropPath}",
-                                          placeholder: (context, url) =>
-                                              Container(
-                                            width: 180,
-                                            child: Center(
-                                                child:
-                                                    CircularProgressIndicator(
-                                              color: Colors.grey,
+                            items: state.now_playing_movies!.take(10).map((e) {
+                              return InkWell(
+                                onTap: () {
+                                  context.pushNamed('details', params: {
+                                    'id': "${e.id}",
+                                  }, queryParams: {
+                                    "isDark": "${theme.isDark.toString()}"
+                                  });
+                                },
+                                child: Stack(
+                                  children: <Widget>[
+                                    SizedBox(
+                                      key: key,
+                                      width: double.infinity,
+                                      height: 210,
+                                      child: SizedBox(
+                                        child: ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            child: CachedNetworkImage(
+                                              imageUrl:
+                                                  "${Const.IMG}${e.backdropPath}",
+                                              imageBuilder:
+                                                  (context, imageProvider) {
+                                                return Container(
+                                                  height: 180,
+                                                  decoration: BoxDecoration(
+                                                      image: DecorationImage(
+                                                          image: imageProvider,
+                                                          fit:
+                                                              BoxFit.fitWidth)),
+                                                );
+                                              },
+                                              placeholder: (context, url) =>
+                                                  SizedBox(
+                                                key: key,
+                                                width: 180,
+                                                child: Center(
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                  color: Colors.grey,
+                                                )),
+                                              ),
+                                              errorWidget:
+                                                  (context, url, error) =>
+                                                      Icon(Icons.error),
                                             )),
-                                          ),
-                                          errorWidget: (context, url, error) =>
-                                              Icon(Icons.error),
-                                        )),
-                                  ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Align(
+                                        alignment: Alignment.bottomLeft,
+                                        child: Text("${e.title.toString()}",
+                                            style: TextStyle(
+                                                fontSize: 20,
+                                                color: Colors.white)),
+                                      ),
+                                    )
+                                  ],
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Align(
-                                    alignment: Alignment.bottomLeft,
-                                    child: Text("${e.title.toString()}",
-                                        style: TextStyle(
-                                            fontSize: 20, color: Colors.white)),
-                                  ),
-                                )
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                        options: CarouselOptions(
-                            pageViewKey: PageStorageKey(3),
-                            viewportFraction: 1,
-                            scrollPhysics: BouncingScrollPhysics(),
-                            // autoPlay: true,
-                            // enableInfiniteScroll: true,
-                            autoPlayInterval: Duration(seconds: 5)),
-                      )),
+                              );
+                            }).toList(),
+                            options: CarouselOptions(
+                                pageViewKey: PageStorageKey(3),
+                                viewportFraction: 1,
+                                scrollPhysics: BouncingScrollPhysics(),
+                                // autoPlay: true,
+                                // enableInfiniteScroll: true,
+                                autoPlayInterval: Duration(seconds: 5)),
+                          )),
 
                       SizedBox(
                         height: 30,
@@ -165,7 +181,7 @@ class HomePage extends StatelessWidget {
                                 color:
                                     theme.isDark ? Colors.white : Colors.black),
                           ),
-                          Text("See more",
+                          Text("",
                               style: TextStyle(
                                   color: theme.isDark
                                       ? Colors.white
@@ -186,7 +202,7 @@ class HomePage extends StatelessWidget {
                             children: state.now_playing_movies
                                     ?.map((e) {
                                       return InkWell(
-                                          onTap: () async {
+                                          onTap: () {
                                             context
                                                 .pushNamed('details', params: {
                                               'id': "${e.id}",
@@ -238,7 +254,7 @@ class HomePage extends StatelessWidget {
                                           ? Colors.white
                                           : Colors.black),
                                 ),
-                                Text("See more",
+                                Text("",
                                     style: TextStyle(
                                         color: theme.isDark.toString() == "true"
                                             ? Colors.white
@@ -297,7 +313,7 @@ class HomePage extends StatelessWidget {
                                           ? Colors.white
                                           : Colors.black),
                                 ),
-                                Text("See more",
+                                Text("",
                                     style: TextStyle(
                                         color: theme.isDark.toString() == "true"
                                             ? Colors.white
@@ -311,6 +327,8 @@ class HomePage extends StatelessWidget {
                               scrollDirection: Axis.horizontal,
                               physics: PageScrollPhysics(),
                               child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: state.top_rated_movies
                                         ?.map((e) {
                                           return InkWell(
@@ -353,7 +371,7 @@ class HomePage extends StatelessWidget {
                                     ? Colors.white
                                     : Colors.black),
                           ),
-                          Text("See more",
+                          Text("",
                               style: TextStyle(
                                   color: theme.isDark.toString() == "true"
                                       ? Colors.white
@@ -420,42 +438,45 @@ class HomePage extends StatelessWidget {
       //body ends here
 
       //bottom app bar start
-      bottomNavigationBar: BottomAppBar(
-        color: theme.isDark.toString() == "true" ? Colors.black : Colors.white,
-        height: 55,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(30, 0, 30, 0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              CupertinoButton(
-                child: Icon(
-                  CupertinoIcons.heart_fill,
-                  color: Colors.red,
-                  size: 25,
-                ),
-                onPressed: () => GoRouter.of(context).pushNamed('likedMovies'),
-              ),
-              CupertinoButton(
-                  child: Icon(
-                    Icons.explore_outlined,
-                    color: theme.isDark.toString() == "true"
-                        ? Colors.white
-                        : Colors.black,
-                    size: 27,
-                  ),
-                  onPressed: () => GoRouter.of(context).pushNamed('explore'))
-            ],
-          ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => GoRouter.of(context).pushNamed('discover'),
-        child: Icon(CupertinoIcons.lightbulb_fill),
-        backgroundColor: Colors.grey[900],
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      // bottomNavigationBar: BottomAppBar(
+      //   color: theme.isDark.toString() == "true" ? Colors.black : Colors.white,
+      //   height: 55,
+      //   child: Padding(
+      //     padding: const EdgeInsets.fromLTRB(30, 0, 30, 0),
+      //     child: Row(
+      //       crossAxisAlignment: CrossAxisAlignment.center,
+      //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      //       children: <Widget>[
+      //         CupertinoButton(
+      //           child: Icon(
+      //             CupertinoIcons.heart_fill,
+      //             color: Colors.red,
+      //             size: 25,
+      //           ),
+      //           // onPressed: () => GoRouter.of(context).pushNamed('likedMovies'),
+      //           onPressed: () {},
+      //         ),
+      //         CupertinoButton(
+      //             child: Icon(
+      //               Icons.explore_outlined,
+      //               color: theme.isDark.toString() == "true"
+      //                   ? Colors.white
+      //                   : Colors.black,
+      //               size: 27,
+      //             ),
+      //             // onPressed: () => GoRouter.of(context).pushNamed('explore')),
+      //             onPressed: () {}),
+      //       ],
+      //     ),
+      //   ),
+      // ),
+      // floatingActionButton: FloatingActionButton(
+      //   // onPressed: () => GoRouter.of(context).pushNamed('discover'),
+      //   onPressed: () {},
+      //   child: Icon(CupertinoIcons.lightbulb_fill),
+      //   backgroundColor: Colors.grey[900],
+      // ),
+      // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 

@@ -37,23 +37,23 @@ final GoRouter _router = GoRouter(
         )
       ], child: HomePage()),
       routes: <RouteBase>[
-        GoRoute(
-          path: 'likedMovies',
-          name: 'likedMovies',
-          builder: (BuildContext context, GoRouterState state) =>
-              LikedMoviesPage(),
-        ),
-        GoRoute(
-          path: 'explore',
-          name: 'explore',
-          builder: (BuildContext context, GoRouterState state) => ExplorePage(),
-        ),
-        GoRoute(
-          path: 'discover',
-          name: 'discover',
-          builder: (BuildContext context, GoRouterState state) =>
-              DiscoverPage(),
-        ),
+        // GoRoute(
+        //   path: 'likedMovies',
+        //   name: 'likedMovies',
+        //   builder: (BuildContext context, GoRouterState state) =>
+        //       LikedMoviesPage(),
+        // ),
+        // GoRoute(
+        //   path: 'explore',
+        //   name: 'explore',
+        //   builder: (BuildContext context, GoRouterState state) => ExplorePage(),
+        // ),
+        // GoRoute(
+        //   path: 'discover',
+        //   name: 'discover',
+        //   builder: (BuildContext context, GoRouterState state) =>
+        //       DiscoverPage(),
+        // ),
         GoRoute(
           path: 'details/:id',
           name: 'details',
